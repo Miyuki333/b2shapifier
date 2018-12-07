@@ -11,7 +11,7 @@ class b2Shapifier
 	
 	static:
 
-	b2PolygonShape[] convert(const(ubyte)[] image, uint width, uint height, b2Vec2 scale = b2Vec2(1.0f, 1.0f), float32 tollerance = 1.0f)
+	b2PolygonShape[] convert(const(ubyte)[] image, uint width, uint height, b2Vec2 scale = b2Vec2(1.0f, 1.0f), float32 tolerance = 1.0f)
 	{	
 		b2Vec2[] points;
 		b2Vec2 point;
@@ -34,8 +34,8 @@ class b2Shapifier
 			points ~= point;
 		} while (point != points[0]);
 
-		//simplify points to tollerance level
-		points = simplify(points, tollerance);
+		//simplify points to tolerance level
+		points = simplify(points, tolerance);
 
 		//convert points to triangles
 		points = Triangulator.convert(points[0..$-1]);
@@ -61,13 +61,13 @@ class b2Shapifier
 		return shapes;
 	}
 
-	b2Vec2[] simplify(b2Vec2[] points, float32 tollerance)
+	b2Vec2[] simplify(b2Vec2[] points, float32 tolerance)
 	{
-		Segment segment = new Segment(points, tollerance);
+		Segment segment = new Segment(points, tolerance);
 		Segment current;
 		bool resolved = false;
 
-		//split segment using the tollerance value until it is completely resolved
+		//split segment using the tolerance value until it is completely resolved
 		while (resolved != true)
 		{
 			current = segment;
@@ -101,14 +101,14 @@ class b2Shapifier
 	class Segment
 	{
 		b2Vec2[] points;
-		float32 tollerance;
+		float32 tolerance;
 		bool resolved = false;
 		protected Segment m_next;
 
-		this(b2Vec2[] points, float32 tollerance)
+		this(b2Vec2[] points, float32 tolerance)
 		{
 			this.points = points;
-			this.tollerance = tollerance;
+			this.tolerance = tolerance;
 			this.resolved = false;
 		}
 
@@ -123,7 +123,7 @@ class b2Shapifier
 			b2Vec2 last = points[$-1];
 
 			//look for the outlier point with the farthest distance from that line
-			float max = tollerance;
+			float max = tolerance;
 			uint max_index = 0;
 
 			foreach(uint i, b2Vec2 point; points[1..$-1])
@@ -134,7 +134,7 @@ class b2Shapifier
 
 			if (max_index == 0) { resolved = true; return null; }
 
-			next = new Segment(points[max_index..$], tollerance);
+			next = new Segment(points[max_index..$], tolerance);
 			points = points[0..max_index+1];
 
 			return next;
